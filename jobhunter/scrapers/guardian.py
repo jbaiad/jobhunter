@@ -44,3 +44,6 @@ class GuardianScraper(AbstractScraper):
                  .rename(columns={'Business Area': 'area',
                                   'Employment Type': 'type',
                                   'Location': 'location'})
+
+__all__ = ['GuardianScraper']
+
