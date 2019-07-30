@@ -39,8 +39,8 @@ class AbstractWorkdayScraper(AbstractScraper,
         info = response.json()['structuredDataAttributes']['data']
         info = json.loads(info) 
 
-        info['date_posted'] = info['datePosted']
-        info['employment_type'] = info['employmentType']
+        info['date_posted'] = pd.Timestamp(info['datePosted'])
+        info['employment_type'] = info['employmentType'].replace('_', ' ')
         info['location'] = info['jobLocation']['address']['addressLocality']
         info['url'] = job_url
 
