@@ -67,8 +67,6 @@ class AbstractWorkdayScraper(AbstractScraper,
             ])
             jobs = cls._get_search_results(offset)
 
-        print(f'Found {len(job_endpoints)} jobs')
-
         return job_endpoints
     
     @classmethod
