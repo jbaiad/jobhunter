@@ -1,21 +1,22 @@
 import abc
 import json
+from typing import Optional
 
 import bs4
 import pandas as pd
 import requests
 
+from jobhunter.daos.interfaces import AbstractJobWriter
+import jobhunter.utils.mixins as mixins
 
-class AbstractScraper(abc.ABC):
-    def __new__(cls, *args, **kwargs):
-        raise TypeError('Scrapers cannot be instantiated!')
 
+class AbstractScraper(abc.ABC, metaclass=mixins.SingletonMeta):
     @abc.abstractclassmethod
-    def scrape(cls, writer: any) -> pd.DataFrame:
+    def scrape(cls, writer: Optional[AbstractJobWriter] = None) -> pd.DataFrame:
         pass
 
 
-class AbstractMetaWorkdayScraper(abc.ABCMeta):
+class AbstractMetaWorkdayScraper(mixins.SingletonMeta):
     def __new__(mcs, name, bases, namespace):
         if not name.upper().startswith('ABSTRACT'):
             assert isinstance(namespace.get('ROOT_URL'), str)
@@ -28,11 +29,16 @@ class AbstractWorkdayScraper(AbstractScraper,
     SEARCH_ENDPOINT = 'fs/searchPagination/318c8bb6f553100021d223d9780d30be'
 
     @classmethod
-    def scrape(cls, writer: any = None) -> pd.DataFrame:
-        return pd.DataFrame([
+    def scrape(cls, writer: Optional[AbstractJobWriter] = None) -> pd.DataFrame:
+        jobs = pd.DataFrame([
             cls._get_job_info(f'{cls.ROOT_URL}/{endpoint}')
             for endpoint in cls._fetch_job_endpoints()
         ])
+
+        if writer is not None:
+            writer.write_jobs(jobs)
+
+        return jobs
 
     @classmethod
     def _get_job_info(cls, job_url: str) -> dict:
