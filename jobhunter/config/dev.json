@@ -1,0 +1,8 @@
+{
+    "SQL": {
+        "URL": "sqlite://"
+    },
+    "LOG": {
+        "LEVEL": "DEBUG"
+    }
+}
