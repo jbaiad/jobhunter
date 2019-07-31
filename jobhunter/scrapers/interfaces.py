@@ -10,13 +10,13 @@ from jobhunter.daos.interfaces import AbstractJobWriter
 import jobhunter.utils.mixins as mixins
 
 
-class AbstractScraper(abc.ABC, metaclass=mixins.SingletonMeta):
+class AbstractScraper(abc.ABC, metaclass=mixins.NotInstantiableMeta):
     @abc.abstractclassmethod
     def scrape(cls, writer: Optional[AbstractJobWriter] = None) -> pd.DataFrame:
         pass
 
 
-class AbstractMetaWorkdayScraper(mixins.SingletonMeta):
+class AbstractMetaWorkdayScraper(mixins.NotInstantiableMeta):
     def __new__(mcs, name, bases, namespace):
         if not name.upper().startswith('ABSTRACT'):
             assert isinstance(namespace.get('ROOT_URL'), str)
