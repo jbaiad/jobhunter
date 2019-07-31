@@ -19,6 +19,7 @@ class AbstractMetaWorkdayScraper(abc.ABCMeta):
     def __new__(mcs, name, bases, namespace):
         if not name.upper().startswith('ABSTRACT'):
             assert isinstance(namespace.get('ROOT_URL'), str)
+            assert isinstance(namespace.get('COMPANY_NAME'), str)
         return super().__new__(mcs, name, bases, namespace)
 
 
@@ -42,6 +43,7 @@ class AbstractWorkdayScraper(AbstractScraper,
         info['date_posted'] = pd.Timestamp(info['datePosted'])
         info['employment_type'] = info['employmentType'].replace('_', ' ')
         info['location'] = info['jobLocation']['address']['addressLocality']
+        info['company'] = cls.COMPANY_NAME
         info['url'] = job_url
 
         del info['@context']
