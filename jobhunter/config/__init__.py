@@ -19,7 +19,7 @@ class Config(pd.Series):
         frame = sys._getframe(2)
         calling_file = frame.f_code.co_filename
         calling_func = frame.f_code.co_name
-        
+
         if calling_file == __file__ and calling_func == '__init__':
             # We only set attributes in the initializing function
             super().__setattr__(name, value)
