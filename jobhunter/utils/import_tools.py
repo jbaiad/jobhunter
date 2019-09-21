@@ -2,6 +2,7 @@ import pkgutil
 import sys
 from typing import Iterable
 
+
 def import_all_from_submodules(excluded_modules: Iterable[str] = []) -> None:
     frame = sys._getframe(1)
     frame.f_globals['__all__'] = getattr(frame.f_globals, '__all__', [])
