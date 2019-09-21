@@ -27,12 +27,10 @@ def apply_filters(query: Query, filters: Iterable[Filter[Any]]) -> Query:
     return query
 
 
-def apply_filter(query: Query, comparator: ComparisonFunc[T], 
-                 arg: Filterable[T]) -> Query:
+def apply_filter(query: Query, comparator: ComparisonFunc[T], arg: Filterable[T]) -> Query:
     if arg is None:
         return query
     elif isinstance(arg, Iterable) and not isinstance(arg, str):
         return query.filter(comparator.__self__.in_(arg))
     else:
         return query.filter(comparator(arg))
-

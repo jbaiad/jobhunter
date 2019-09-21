@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, String
+from sqlalchemy import Boolean, Column, DateTime, String
 
 import jobhunter.daos.sql.common as common
 
@@ -13,7 +13,7 @@ class Job(common.Base):
     employment_type = Column(String)
     location = Column(String)
     title = Column(String)
+    is_active = Column(Boolean)
     url = Column(String, primary_key=True)
 
 common.METADATA.create_all()
-
