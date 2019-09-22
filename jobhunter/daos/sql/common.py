@@ -1,3 +1,5 @@
+import os
+
 from typing import Any, Callable, Iterable, Optional, Tuple, TypeVar, Union
 
 import sqlalchemy
@@ -8,7 +10,12 @@ from sqlalchemy.sql.elements import BinaryExpression
 
 import jobhunter.config
 
-SQLALCHEMY_ENGINE = sqlalchemy.create_engine(jobhunter.config.SQL_URL)
+if hasattr(jobhunter.config, "SQL_FILENAME"):
+    SQLITE_PATH = "sqlite:///" + os.path.join(os.path.abspath(os.path.dirname(__file__)), jobhunter.config.SQL_FILENAME)
+    SQLALCHEMY_ENGINE = sqlalchemy.create_engine(SQLITE_PATH)
+else:
+    SQLALCHEMY_ENGINE = sqlalchemy.create_egine(jobhunter.config.SQL_URL)
+
 METADATA = sqlalchemy.MetaData(SQLALCHEMY_ENGINE)
 
 Base = declarative_base()

@@ -1,6 +1,6 @@
 {
     "SQL": {
-        "URL": "sqlite://"
+        "FILENAME": "jobhunter-dev.db"
     },
     "LOG": {
         "LEVEL": "DEBUG"
