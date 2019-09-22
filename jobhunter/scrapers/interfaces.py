@@ -37,6 +37,7 @@ class AbstractWorkdayScraper(AbstractScraper,
 
         if writer is not None:
             writer.write_jobs(jobs)
+            writer.mark_inactive_jobs(jobs)
 
         return jobs
 
@@ -51,6 +52,7 @@ class AbstractWorkdayScraper(AbstractScraper,
         info['location'] = info['jobLocation']['address']['addressLocality']
         info['company'] = cls.COMPANY_NAME
         info['url'] = job_url
+        info['is_active'] = True
 
         del info['@context']
         del info['@type']
