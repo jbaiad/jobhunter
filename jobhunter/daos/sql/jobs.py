@@ -37,8 +37,9 @@ class JobWriter(interfaces.AbstractJobWriter):
     @classmethod
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
         session = common.Session()
-        jobs = [Job(**values) for values in jobs.to_dict('records')]
-        session.bulk_save_objects(jobs, update_changed_only=True)
+        current_urls = set(row[0] for row in session.query(Job.url).distinct())
+        session.bulk_update_mappings(Job, jobs[jobs.url.isin(current_urls)].to_dict('records'))
+        session.bulk_insert_mappings(Job, jobs[~jobs.url.isin(current_urls)].to_dict('records'))
         session.commit()
 
     @classmethod
