@@ -2,7 +2,6 @@ import abc
 import json
 from typing import Optional
 
-import bs4
 import pandas as pd
 import requests
 
@@ -17,11 +16,11 @@ class AbstractScraper(abc.ABC, metaclass=mixins.NotInstantiableMeta):
 
 
 class AbstractMetaWorkdayScraper(mixins.NotInstantiableMeta):
-    def __new__(mcs, name, bases, namespace):
+    def __new__(mcs, name, bases, namespace, **kwargs):
         if not name.upper().startswith('ABSTRACT'):
             assert isinstance(namespace.get('ROOT_URL'), str)
             assert isinstance(namespace.get('COMPANY_NAME'), str)
-        return super().__new__(mcs, name, bases, namespace)
+        return super().__new__(mcs, name, bases, namespace, **kwargs)
 
 
 class AbstractWorkdayScraper(AbstractScraper,
@@ -45,7 +44,7 @@ class AbstractWorkdayScraper(AbstractScraper,
     def _get_job_info(cls, job_url: str) -> dict:
         response = requests.get(job_url, headers={'Accept': 'application/json'})
         info = response.json()['structuredDataAttributes']['data']
-        info = json.loads(info) 
+        info = json.loads(info)
 
         info['date_posted'] = pd.Timestamp(info['datePosted'])
         info['employment_type'] = info['employmentType'].replace('_', ' ')
@@ -70,7 +69,7 @@ class AbstractWorkdayScraper(AbstractScraper,
         job_endpoints = []
         jobs = cls._get_search_results(offset)
 
-        while len(jobs) > 0:
+        while jobs:
             offset += len(jobs)
             job_endpoints.extend([
                 '/'.join(j['title']['commandLink'].split('/')[3:]) for j in jobs
@@ -78,7 +77,7 @@ class AbstractWorkdayScraper(AbstractScraper,
             jobs = cls._get_search_results(offset)
 
         return job_endpoints
-    
+
     @classmethod
     def _get_search_results(cls, offset: int) -> dict:
         url = f'{cls.ROOT_URL}/{cls.SEARCH_ENDPOINT}/{offset}'
@@ -86,4 +85,3 @@ class AbstractWorkdayScraper(AbstractScraper,
         containing_json = response['body']['children'][0]['children'][0]
 
         return containing_json.get('listItems', [])
-

@@ -1,17 +1,19 @@
 from datetime import datetime
-from typing import Iterable, Optional, Union
 
 import pandas as pd
 
+from jobhunter.daos import common
 from jobhunter.utils import mixins
 
 
 class AbstractJobReader(metaclass=mixins.NotInstantiableMeta):
     @classmethod
     def get_jobs(cls,
-                 company: Optional[Union[str, Iterable[str]]] = None,
-                 employment_type: Optional[Union[str, Iterable[str]]] = None,
-                 latest_post_date: Optional[Union[str, datetime]] = None,
+                 company: common.Filterable[str] = None,
+                 employment_type: common.Filterable[str] = None,
+                 location: common.Filterable[str] = None,
+                 latest_post_date: common.Filterable[datetime] = None,
+                 is_active: common.Filterable[bool] = True
                  ) -> pd.DataFrame:
         pass
 

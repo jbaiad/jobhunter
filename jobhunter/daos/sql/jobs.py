@@ -3,18 +3,19 @@ from datetime import datetime
 import pandas as pd
 
 import jobhunter.daos.interfaces.jobs as interfaces
-import jobhunter.daos.sql.common as common
+import jobhunter.daos.common as daos_common
+from jobhunter.daos.sql import common
 from jobhunter.daos.sql.schemata import Job
 
 
 class JobReader(interfaces.AbstractJobReader):
     @classmethod
     def get_jobs(cls,
-                 company: common.Filterable[str] = None,
-                 employment_type: common.Filterable[str] = None,
-                 location: common.Filterable[str] = None,
-                 latest_post_date: common.Filterable[datetime] = None,
-                 is_active: common.Filterable[bool] = True,
+                 company: daos_common.Filterable[str] = None,
+                 employment_type: daos_common.Filterable[str] = None,
+                 location: daos_common.Filterable[str] = None,
+                 latest_post_date: daos_common.Filterable[datetime] = None,
+                 is_active: daos_common.Filterable[bool] = True,
                 ) -> pd.DataFrame:
         session = common.Session()
         rows = common.apply_filters(session.query(Job), [

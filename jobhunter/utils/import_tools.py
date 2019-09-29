@@ -1,10 +1,11 @@
 import pkgutil
 import sys
-from typing import Iterable
+from typing import Iterable, Optional
 
 
-def import_all_from_submodules(excluded_modules: Iterable[str] = []) -> None:
-    frame = sys._getframe(1)
+def import_all_from_submodules(excluded_modules: Optional[Iterable[str]] = None) -> None:
+    excluded_modules = excluded_modules or []
+    frame = sys._getframe(1)    # pylint: disable=protected-access
     frame.f_globals['__all__'] = getattr(frame.f_globals, '__all__', [])
     package_name = frame.f_globals['__name__']
     package_path = frame.f_globals['__path__']
@@ -19,4 +20,3 @@ def import_all_from_submodules(excluded_modules: Iterable[str] = []) -> None:
             attr = getattr(submodule, attr_name)
             attr.__module__ = f'{package_name}.{attr.__module__}'
             frame.f_globals[attr_name] = attr
-

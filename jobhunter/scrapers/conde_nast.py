@@ -6,4 +6,3 @@ class CondeNastScraper(AbstractWorkdayScraper):
     ROOT_URL = r'https://condenast.wd5.myworkdayjobs.com/CondeCareers'
 
 __all__ = ['CondeNastScraper']
-

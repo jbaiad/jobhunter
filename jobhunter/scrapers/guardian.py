@@ -46,4 +46,3 @@ class GuardianScraper(AbstractScraper):
                                   'Location': 'location'})
 
 __all__ = ['GuardianScraper']
-
