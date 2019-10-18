@@ -1,6 +1,7 @@
 from datetime import datetime
 
 import pandas as pd
+from sqlalchemy import func
 
 import jobhunter.daos.interfaces.jobs as interfaces
 import jobhunter.daos.common as daos_common
@@ -38,9 +39,13 @@ class JobWriter(interfaces.AbstractJobWriter):
     @classmethod
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
         session = common.Session()
+        max_job_id = session.query(func.max(Job.id)).first()[0] or 1
         current_urls = set(row[0] for row in session.query(Job.url).distinct())
         session.bulk_update_mappings(Job, jobs[jobs.url.isin(current_urls)].to_dict('records'))
-        session.bulk_insert_mappings(Job, jobs[~jobs.url.isin(current_urls)].to_dict('records'))
+        
+        new_jobs = jobs[~jobs.url.isin(current_urls)]
+        new_jobs['id'] = range(max_job_id, max_job_id + len(new_jobs))
+        session.bulk_insert_mappings(Job, new_jobs.to_dict('records'))
         session.commit()
 
     @classmethod

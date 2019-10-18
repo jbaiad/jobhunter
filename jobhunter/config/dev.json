@@ -4,5 +4,9 @@
     },
     "LOG": {
         "LEVEL": "DEBUG"
-    }
+    },
+    "FLASK_ADMIN_SWATCH": "simplex",
+    "DEBUG": true,
+    "SECRET_KEY": "it's a secret, dummy",
+    "APP_NAME": "JobHunter"
 }

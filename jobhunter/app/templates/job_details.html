@@ -1,0 +1,89 @@
+{% extends "admin/model/details.html" %}
+
+
+{% block details_table %}
+  <button id="watchlist" type="button"></button>
+
+  <br><br>
+
+  <table class="table table-hover table-bordered searchable">
+    {% for c, name in details_columns %}
+      <tr>
+        <td><b>{{ name }}</b></td>
+
+        <td>
+            {% if c == 'description' %}
+              {% for item in get_value(model, c) %}
+                {{ item }}
+                <br><br>
+              {% endfor %}
+            {% elif c == 'url' %}
+              <a href={{ get_value(model, c) }}>{{ get_value(model, c) }}</a>
+            {% else %}
+              {{ get_value(model, c) }}
+            {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}
+
+{% block body %}
+<script type=text/javascript>
+function setupWatchListButton() {
+    if (document.getElementById("watchlist")) {
+        const button = document.getElementById("watchlist");
+        const request = new XMLHttpRequest();
+        request.open("GET", "/iswatched" + window.location.search, false);
+        request.send();
+
+        if (request.status == 200) {
+            // Already in user's watch list
+            button.className = "btn btn-danger";
+            button.onclick=removeFromWatchList;
+            button.innerHTML = "Remove from watchlist";
+        } else if (request.status == 204) {
+            // Not in user's watch list
+            button.className = "btn btn-info";
+            button.onclick = addToWatchList;
+            button.innerHTML = "Add to watchlist";
+        }
+         
+    } else {
+        setTimeout(setupWatchListButton, 15);
+    }
+}
+
+function addToWatchList() {
+    const xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 204) {
+            const button = document.getElementById("watchlist");
+            button.className="btn btn-danger";
+            button.innerHTML = "Remove from watchlist";
+            button.onclick = removeFromWatchList;
+        }
+    };
+    xhttp.open("GET", "/watch" + window.location.search, true);
+    xhttp.send();
+}
+
+function removeFromWatchList() {
+    const request = new XMLHttpRequest();
+    request.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 204) {
+            const button = document.getElementById("watchlist");
+            button.className = "btn btn-info";
+            button.innerHTML = "Add to watchlist";
+            button.onclick = addToWatchList;
+        }
+    };
+    request.open("GET", "/unwatch" + window.location.search, true);
+    request.send();
+}
+
+setupWatchListButton();
+</script>
+    {{ super() }}
+{% endblock %}
+
