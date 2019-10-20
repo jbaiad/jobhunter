@@ -1,3 +1,5 @@
+import logging
+
 import flask
 import flask_admin
 import flask_login
@@ -10,6 +12,7 @@ from jobhunter.daos import sql as daos
 
 
 APP = flask.Flask(__name__)
+APP.logger.handlers.extend(logging.getLogger('gunicorn.error').handlers)
 APP.config.update(config.to_dict())                 # pylint: disable=no-member
 APP.config['ENV'] = config.name                     # pylint: disable=no-member
 routes.attach(APP)
