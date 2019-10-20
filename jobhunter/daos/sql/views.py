@@ -11,6 +11,8 @@ from jobhunter.daos.sql import schemata
 
 
 class SqlView(sqla.ModelView):
+    page_size = 30
+    can_set_page_size = True
     session = common.Session()
 
     def __init__(self, model, *args, **kwargs):
