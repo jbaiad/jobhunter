@@ -1,3 +1,3 @@
 from .__init__ import APP
 
-APP.run()
+APP.run(host='0.0.0.0')
