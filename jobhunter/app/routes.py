@@ -18,7 +18,7 @@ def attach(app):
     @app.route('/login', methods=['GET', 'POST'])
     def login():
         if flask_login.current_user.is_authenticated:
-            return flask.redirect(flask.url_for('/'))
+            return flask.redirect(flask.url_for('admin.index'))
         else:
             form = forms.LoginForm()
             if form.validate_on_submit():
@@ -31,7 +31,7 @@ def attach(app):
                     flask.flash('Welcome, {}'.format(form.username.data))
                     next_page = flask.request.args.get('next')
                     if not next_page or wkzg_urls.url_parse(next_page).netloc != '':
-                        next_page = '/'
+                        next_page = flask.url_for('admin.index')
                     return flask.redirect(next_page)
 
             return flask.render_template('login.html', title='Sign In', form=form)
