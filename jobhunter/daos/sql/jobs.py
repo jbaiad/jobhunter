@@ -40,10 +40,12 @@ class JobWriter(interfaces.AbstractJobWriter):
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
         session = common.Session()
         max_job_id = session.query(func.max(Job.id)).first()[0] or 1
-        current_urls = set(row[0] for row in session.query(Job.url).distinct())
-        session.bulk_update_mappings(Job, jobs[jobs.url.isin(current_urls)].to_dict('records'))
+        current_urls_to_ids = {job.url: job.id for job in session.query(Job).distinct(Job.id, Job.url)}
+        current_jobs = jobs[jobs.url.isin(current_urls_to_ids)]
+        current_jobs['id'] = current_jobs['url'].map(current_urls_to_ids)
+        session.bulk_update_mappings(Job, current_jobs.to_dict('records'))
         
-        new_jobs = jobs[~jobs.url.isin(current_urls)]
+        new_jobs = jobs[~jobs.url.isin(current_urls_to_ids)]
         new_jobs['id'] = range(max_job_id, max_job_id + len(new_jobs))
         session.bulk_insert_mappings(Job, new_jobs.to_dict('records'))
         session.commit()
@@ -51,7 +53,7 @@ class JobWriter(interfaces.AbstractJobWriter):
     @classmethod
     def mark_inactive_jobs(cls, jobs: pd.DataFrame) -> pd.DataFrame:
         active_jobs = JobReader.get_jobs(is_active=True, company=jobs.company)
-        inactive_jobs = active_jobs[~active_jobs.url.isin(jobs)]
+        inactive_jobs = active_jobs[~active_jobs.url.isin(jobs.url)]
         inactive_jobs.is_active = False
         cls.write_jobs(inactive_jobs)
 
