@@ -33,6 +33,7 @@ class JobView(SqlView, ReadOnlyView):
     column_searchable_list = column_list
     column_filters = column_list
     column_type_formatters = {datetime: lambda view, value: value.strftime('%Y-%m-%d')}
+    column_default_sort = ('date_posted', True)
 
     def get_detail_value(context, model, name):
         if name == 'description':
