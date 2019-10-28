@@ -35,8 +35,13 @@ class HearstScraper(interfaces.AbstractScraper):
         threads = cls._start_threads(jobs)
         cls._populate_queue(soup.find(id='jSearchId')['value'], headers)
         cls._wait_for_threads_to_finish(threads)
+        jobs = pd.DataFrame(jobs)
 
-        return pd.DataFrame(jobs)
+        if writer is not None:
+            writer.write_jobs(jobs)
+            writer.mark_inactive_jobs(jobs)
+
+        return jobs
 
     @classmethod
     def _wait_for_threads_to_finish(cls, threads):
