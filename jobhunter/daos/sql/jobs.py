@@ -38,6 +38,9 @@ class JobReader(interfaces.AbstractJobReader):
 class JobWriter(interfaces.AbstractJobWriter):
     @classmethod
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
+        jobs['date_posted'] = jobs['date_posted'].fillna(datetime.today())
+        jobs['type'] = jobs['type'].fillna('UNKNOWN')
+
         session = common.Session()
         max_job_id = session.query(func.max(Job.id)).first()[0] or 1
         current_urls_to_ids = {job.url: job.id for job in session.query(Job).distinct(Job.id, Job.url)}
