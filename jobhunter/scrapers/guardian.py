@@ -42,7 +42,7 @@ class GuardianScraper(AbstractScraper):
 
         return pd.DataFrame(jobs)\
                  .rename(columns={'Business Area': 'area',
-                                  'Employment Type': 'type',
+                                  'Employment Type': 'employment_type',
                                   'Location': 'location'})
 
 __all__ = ['GuardianScraper']

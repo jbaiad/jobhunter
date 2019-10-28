@@ -39,7 +39,7 @@ class JobWriter(interfaces.AbstractJobWriter):
     @classmethod
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
         jobs['date_posted'] = jobs['date_posted'].fillna(datetime.today())
-        jobs['type'] = jobs['type'].fillna('UNKNOWN')
+        jobs['employment_type'] = jobs['employment_type'].fillna('UNKNOWN')
 
         session = common.Session()
         max_job_id = session.query(func.max(Job.id)).first()[0] or 1

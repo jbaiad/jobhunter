@@ -90,7 +90,7 @@ class HearstScraper(interfaces.AbstractScraper):
                     'company': soup.find('dl', class_='field_company').dd.text.strip(),
                     'industry': soup.find('dl', class_='field_category').dd.text.strip(),
                     'date_posted': None,
-                    'type': None,
+                    'employment_type': None,
                     'url': job_url,
                     'is_active': True
                 })
