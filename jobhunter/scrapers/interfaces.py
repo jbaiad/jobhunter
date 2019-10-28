@@ -29,6 +29,7 @@ class AbstractWorkdayScraper(AbstractScraper,
 
     @classmethod
     def scrape(cls, writer: Optional[AbstractJobWriter] = None) -> pd.DataFrame:
+        # TODO: This should be mulithreaded
         jobs = pd.DataFrame([
             cls._get_job_info(f'{cls.ROOT_URL}/{endpoint}')
             for endpoint in cls._fetch_job_endpoints()
