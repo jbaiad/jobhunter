@@ -38,18 +38,18 @@ class JobReader(interfaces.AbstractJobReader):
 class JobWriter(interfaces.AbstractJobWriter):
     @classmethod
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
-        jobs['date_posted'] = jobs['date_posted'].fillna(datetime.today())
         jobs['employment_type'] = jobs['employment_type'].fillna('UNKNOWN')
 
         session = common.Session()
         max_job_id = session.query(func.max(Job.id)).first()[0] or 1
-        current_urls_to_ids = {job.url: job.id for job in session.query(Job).distinct(Job.id, Job.url)}
-        current_jobs = jobs[jobs.url.isin(current_urls_to_ids)]
-        current_jobs['id'] = current_jobs['url'].map(current_urls_to_ids)
+        current_urls_to_jobs = {job.url: job for job in session.query(Job).group_by(Job.url).all()}
+        current_jobs = jobs[jobs.url.isin(current_urls_to_jobs)]
+        current_jobs['id'] = current_jobs['url'].map(lambda url: current_urls_to_jobs[url].id)
         session.bulk_update_mappings(Job, current_jobs.to_dict('records'))
         
-        new_jobs = jobs[~jobs.url.isin(current_urls_to_ids)]
+        new_jobs = jobs[~jobs.url.isin(current_urls_to_jobs)]
         new_jobs['id'] = range(max_job_id, max_job_id + len(new_jobs))
+        new_jobs['date_posted'] = new_jobs['date_posted'].fillna(datetime.today())
         session.bulk_insert_mappings(Job, new_jobs.to_dict('records'))
         session.commit()
 
