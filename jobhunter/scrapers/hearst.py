@@ -91,7 +91,7 @@ class HearstScraper(interfaces.AbstractScraper):
                 jobs.append({
                     'title': soup.find('h1', class_='title').text.strip(),
                     'location': soup.find('h4', class_='primary_location').span.next_sibling.strip(),
-                    'description': soup.find('div', class_='job_description').text.strip(),
+                    'description': str(soup.find('div', class_='job_description')),
                     'company': soup.find('dl', class_='field_company').dd.text.strip(),
                     'industry': soup.find('dl', class_='field_category').dd.text.strip(),
                     'date_posted': None,
