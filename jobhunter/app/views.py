@@ -11,4 +11,4 @@ class HiddenView(flask_admin.AdminIndexView):
 
 JOB_VIEW = sql_views.JobView(sql_schemata.Job, name='Jobs', endpoint='jobs')
 JOB_WATCH_VIEW = sql_views.JobWatchView(sql_schemata.Job, name='Watch List', endpoint='watchlist')
-ADMIN_INDEX_VIEW = HiddenView(url='/')
+ADMIN_INDEX_VIEW = HiddenView(url='/', template='index.html')
