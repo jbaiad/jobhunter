@@ -35,6 +35,12 @@ class JobView(SqlView, ReadOnlyView):
     column_type_formatters = {datetime: lambda view, value: value.strftime('%Y-%m-%d')}
     column_default_sort = ('date_posted', True)
 
+    def get_query(self):
+        return self.session.query(schemata.Job).filter(schemata.Job.is_active == True)
+
+    def get_count_query(self):
+        return self.session.query(func.count(schemata.Job.id)).filter(schemata.Job.is_active == True)
+
     def get_detail_value(context, model, name):
         if name == 'description':
             soup = bs4.BeautifulSoup(model.description, 'html.parser')
