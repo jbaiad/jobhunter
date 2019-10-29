@@ -2,9 +2,10 @@
 
 
 {% block details_table %}
+  {% if flask_login.current_user.is_authenticated %}
   <button id="watchlist" type="button"></button>
-
   <br><br>
+  {% endif %}
 
   <table class="table table-hover table-bordered searchable">
     {% for c, name in details_columns %}
@@ -29,6 +30,8 @@
 {% endblock %}
 
 {% block body %}
+
+{% if flask_login.current_user.is_authenticated %}
 <script type=text/javascript>
 function setupWatchListButton() {
     if (document.getElementById("watchlist")) {
@@ -84,6 +87,7 @@ function removeFromWatchList() {
 
 setupWatchListButton();
 </script>
+{% endif %}
     {{ super() }}
 {% endblock %}
 

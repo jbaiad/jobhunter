@@ -33,4 +33,4 @@ def load_user(identifier):
 @APP.context_processor
 def inject():
     return dict(admin=ADMIN, get_url=flask.url_for, h=flask_admin.helpers, _gettext=flask_admin.babel.gettext,
-                _ngettext=flask_admin.babel.ngettext, log=print)
+                _ngettext=flask_admin.babel.ngettext, log=print, flask_login=flask_login)
