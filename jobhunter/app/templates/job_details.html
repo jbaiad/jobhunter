@@ -1,32 +1,24 @@
 {% extends "admin/model/details.html" %}
 
+{% block details_search %}
+{% endblock %}
 
 {% block details_table %}
   {% if flask_login.current_user.is_authenticated %}
+  <br>
   <button id="watchlist" type="button"></button>
   <br><br>
   {% endif %}
 
-  <table class="table table-hover table-bordered searchable">
-    {% for c, name in details_columns %}
-      <tr>
-        <td><b>{{ name }}</b></td>
-
-        <td>
-            {% if c == 'description' %}
-              {% for item in get_value(model, c) %}
-                {{ item }}
-                <br><br>
-              {% endfor %}
-            {% elif c == 'url' %}
-              <a href={{ get_value(model, c) }}>{{ get_value(model, c) }}</a>
-            {% else %}
-              {{ get_value(model, c) }}
-            {% endif %}
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
+  <i>Last updated: {{ model.date_posted.strftime('%Y-%m-%d') }}</i>
+  <br>
+  <a href={{ model.url }}>
+  <h1>{{ model.title }}</h1>
+  <hr>
+  <h3>{{ model.company }} &vert; {{ model.location }} &vert; {{ model.employment_type }}</h3>
+  <br>
+  </a>
+  {{ model.description|safe }}
 {% endblock %}
 
 {% block body %}
