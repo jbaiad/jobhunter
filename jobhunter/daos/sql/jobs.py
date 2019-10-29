@@ -45,6 +45,7 @@ class JobWriter(interfaces.AbstractJobWriter):
         current_urls_to_jobs = {job.url: job for job in session.query(Job).group_by(Job.url).all()}
         current_jobs = jobs[jobs.url.isin(current_urls_to_jobs)]
         current_jobs['id'] = current_jobs['url'].map(lambda url: current_urls_to_jobs[url].id)
+        current_jobs['date_posted'] = current_jobs['url'].map(lambda url: current_urls_to_jobs[url].date_posted)
         session.bulk_update_mappings(Job, current_jobs.to_dict('records'))
         
         new_jobs = jobs[~jobs.url.isin(current_urls_to_jobs)]
