@@ -4,8 +4,8 @@
 {% endblock %}
 
 {% block details_table %}
-  {% if flask_login.current_user.is_authenticated %}
   <br>
+  {% if flask_login.current_user.is_authenticated %}
   <button id="watchlist" type="button"></button>
   <br><br>
   {% endif %}
@@ -19,6 +19,7 @@
   <br>
   </a>
   {{ model.description|safe }}
+  <br>
 {% endblock %}
 
 {% block body %}
