@@ -17,6 +17,7 @@ class JobReader(interfaces.AbstractJobReader):
                  location: daos_common.Filterable[str] = None,
                  latest_post_date: daos_common.Filterable[datetime] = None,
                  is_active: daos_common.Filterable[bool] = True,
+                 url: daos_common.Filterable[str] = None,
                 ) -> pd.DataFrame:
         session = common.Session()
         rows = common.apply_filters(session.query(Job), [
@@ -24,7 +25,8 @@ class JobReader(interfaces.AbstractJobReader):
             (Job.employment_type.__eq__, employment_type),
             (Job.location.__eq__, location),
             (Job.date_posted.__le__, latest_post_date),
-            (Job.is_active.__eq__, is_active)
+            (Job.is_active.__eq__, is_active),
+            (Job.url.__eq__, url)
         ]).all()
 
         if rows:
@@ -32,32 +34,33 @@ class JobReader(interfaces.AbstractJobReader):
                 row.__dict__ for row in rows
             ]).drop('_sa_instance_state', axis=1)
         else:
-            return pd.DataFrame()
+            return pd.DataFrame(columns=Job.__table__.columns.keys())
 
 
 class JobWriter(interfaces.AbstractJobWriter):
     @classmethod
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
-        jobs['employment_type'] = jobs['employment_type'].fillna('UNKNOWN')
-
         session = common.Session()
-        max_job_id = session.query(func.max(Job.id)).first()[0] or 1
-        current_urls_to_jobs = {job.url: job for job in session.query(Job).group_by(Job.url).all()}
-        current_jobs = jobs[jobs.url.isin(current_urls_to_jobs)]
-        current_jobs['id'] = current_jobs['url'].map(lambda url: current_urls_to_jobs[url].id)
-        current_jobs['date_posted'] = current_jobs['url'].map(lambda url: current_urls_to_jobs[url].date_posted)
+        max_job_id = (session.query(func.max(Job.id)).first()[0] or 0) + 1
+        current_jobs = JobReader.get_jobs(url=jobs.url, is_active=True)
+
+        inserted_jobs = jobs[~jobs.url.isin(current_jobs.url)]
+        inserted_jobs['id'] = range(max_job_id, max_job_id + len(inserted_jobs))
+        inserted_jobs['date_posted'] = inserted_jobs['date_posted'].fillna(datetime.today())
+        session.bulk_insert_mappings(Job, inserted_jobs.to_dict('records'))
+
+        updated_jobs = jobs[jobs['url'].isin(current_jobs['url'])].reset_index()
+        updated_jobs['id'] = current_jobs.loc[current_jobs['url'].isin(jobs['url']), 'id']
+        updated_jobs['date_posted'] = current_jobs['date_posted'].combine_first(current_jobs['date_posted'])\
+                                                                 .fillna(datetime.today())
         session.bulk_update_mappings(Job, current_jobs.to_dict('records'))
         
-        new_jobs = jobs[~jobs.url.isin(current_urls_to_jobs)]
-        new_jobs['id'] = range(max_job_id, max_job_id + len(new_jobs))
-        new_jobs['date_posted'] = new_jobs['date_posted'].fillna(datetime.today())
-        session.bulk_insert_mappings(Job, new_jobs.to_dict('records'))
         session.commit()
 
     @classmethod
     def mark_inactive_jobs(cls, jobs: pd.DataFrame) -> pd.DataFrame:
-        active_jobs = JobReader.get_jobs(is_active=True, company=jobs.company)
-        inactive_jobs = active_jobs[~active_jobs.url.isin(jobs.url)]
+        active_jobs = JobReader.get_jobs(is_active=True, company=jobs['company'], url=jobs['url'])
+        inactive_jobs = active_jobs[~active_jobs.url.isin(jobs['url'])]
         inactive_jobs.is_active = False
         cls.write_jobs(inactive_jobs)
 

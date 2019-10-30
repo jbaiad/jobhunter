@@ -35,7 +35,7 @@ class HearstScraper(interfaces.AbstractScraper):
         threads = cls._start_threads(jobs)
         cls._populate_queue(soup.find(id='jSearchId')['value'], headers)
         cls._wait_for_threads_to_finish(threads)
-        jobs = pd.DataFrame(jobs)
+        jobs = pd.DataFrame(jobs).drop_duplicates('url', keep='first')
 
         if writer is not None:
             writer.write_jobs(jobs)
