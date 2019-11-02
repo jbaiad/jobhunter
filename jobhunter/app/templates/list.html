@@ -1,0 +1,15 @@
+{% extends 'admin/model/list.html' %}
+{% import 'base.html' as base with context %}
+
+{% block head_meta %}
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-150348905-1"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'UA-150348905-1');
+    </script>
+    {{ super() }}
+{% endblock %}

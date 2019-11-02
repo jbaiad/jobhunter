@@ -27,6 +27,7 @@ class ReadOnlyView(sqla.ModelView):
 
 
 class JobView(SqlView, ReadOnlyView):
+    list_template = 'list.html'
     details_template = 'job_details.html'
     column_details_list = ['title', 'company', 'employment_type', 'url', 'location', 'date_posted', 'description']
     column_list = ['title', 'company', 'location', 'employment_type', 'date_posted']

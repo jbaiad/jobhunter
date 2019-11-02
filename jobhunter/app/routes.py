@@ -1,4 +1,5 @@
 import http
+import os
 
 import flask
 import flask_login
@@ -8,7 +9,60 @@ from jobhunter.app import forms
 from jobhunter.daos import sql as daos
 
 
+def attach_favicons(app):
+    @app.route('/favicon.ico')
+    def favicon():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'favicon.ico')
+
+    @app.route('/android-icon-36x36.png')
+    def android_icon_36x36():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'android-icon-36x36.png')
+
+    @app.route('/android-icon-48x48.png')
+    def android_icon_48x48():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'android-icon-48x48.png')
+
+    @app.route('/android-icon-72x72.png')
+    def android_icon_72x72():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'android-icon-72x72.png')
+
+    @app.route('/android-icon-96x96.png')
+    def android_icon_96x96():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'android-icon-96x96.png')
+
+    @app.route('/android-icon-144x144.png')
+    def android_icon_144x144():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'android-icon-144x144.png')
+
+    @app.route('/android-icon-192x192.png')
+    def android_icon_192x192():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'android-icon-192x192.png')
+
+    @app.route('/browserconfig.xml')
+    def browser_config_xml():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'browserconfig.xml')
+
+    @app.route('/ms-icon-70x70.png')
+    def ms_icon_70x70():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'ms-icon-70x70.png')
+
+    @app.route('/ms-icon-144x144.png')
+    def ms_icon_144x144():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'ms-icon-144x144.png')
+
+    @app.route('/ms-icon-150x150.png')
+    def ms_icon_150x150():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'ms-icon-150x150.png')
+
+    @app.route('/ms-icon-310x310.png')
+    def ms_icon_310x310():
+        return flask.send_from_directory(os.path.join(app.root_path, 'static'), 'ms-icon-310x310.png')
+
+
 def attach(app):
+    attach_favicons(app)
+
+
     @app.route('/logout')
     def logout():
         flask_login.logout_user()
