@@ -36,10 +36,11 @@ class AbstractWorkdayScraper(AbstractScraper,
         ])
 
         if writer is not None:
-            writer.write_jobs(jobs)
-            writer.mark_inactive_jobs(jobs)
-
-        return jobs
+            new_jobs, updated_jobs = writer.write_jobs(jobs)
+            deleted_jobs = writer.mark_inactive_jobs(jobs)
+            return new_jobs, updated_jobs, deleted_jobs
+        else:
+            return jobs
 
     @classmethod
     def _get_job_info(cls, job_url: str) -> dict:
