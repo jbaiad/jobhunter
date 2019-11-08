@@ -42,20 +42,26 @@ class JobWriter(interfaces.AbstractJobWriter):
     def write_jobs(cls, jobs: pd.DataFrame) -> None:
         session = common.Session()
         max_job_id = (session.query(func.max(Job.id)).first()[0] or 0) + 1
-        current_jobs = JobReader.get_jobs(url=jobs.url, is_active=True)
+        jobs = jobs.filter(Job.__table__.columns.keys(), axis=1).set_index('url')
+        current_jobs = JobReader.get_jobs(url=jobs.index, is_active=True).set_index('url')
 
-        inserted_jobs = jobs[~jobs.url.isin(current_jobs.url)]
+        inserted_jobs = jobs.loc[jobs.index.difference(current_jobs.index)]
         inserted_jobs['id'] = range(max_job_id, max_job_id + len(inserted_jobs))
         inserted_jobs['date_posted'] = inserted_jobs['date_posted'].fillna(datetime.today())
-        session.bulk_insert_mappings(Job, inserted_jobs.to_dict('records'))
+        session.bulk_insert_mappings(Job, inserted_jobs.reset_index().to_dict('records'))
 
-        updated_jobs = jobs[jobs['url'].isin(current_jobs['url'])].reset_index()
-        updated_jobs['id'] = current_jobs.loc[current_jobs['url'].isin(jobs['url']), 'id']
-        updated_jobs['date_posted'] = current_jobs['date_posted'].combine_first(current_jobs['date_posted'])\
-                                                                 .fillna(datetime.today())
-        session.bulk_update_mappings(Job, current_jobs.to_dict('records'))
+        updated_jobs = jobs.loc[jobs.index.intersection(current_jobs.index)]
+        updated_jobs['id'] = current_jobs.loc[updated_jobs.index, 'id']
+        updated_jobs['date_posted'] = current_jobs.loc[updated_jobs.index, 'date_posted'].fillna(datetime.today())
+        for idx, current_job in current_jobs.loc[updated_jobs.index].iterrows():
+            if current_job.equals(updated_jobs.loc[idx].reindex_like(current_job)):
+                updated_jobs.drop(index=idx, inplace=True)
         
+        session.bulk_update_mappings(Job, updated_jobs.reset_index().to_dict('records'))
+
         session.commit()
+
+        return inserted_jobs, updated_jobs
 
     @classmethod
     def mark_inactive_jobs(cls, jobs: pd.DataFrame) -> pd.DataFrame:
