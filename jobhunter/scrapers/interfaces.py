@@ -1,6 +1,8 @@
 import abc
 import json
+import threading
 from typing import Optional
+import queue
 
 import pandas as pd
 import requests
@@ -26,14 +28,16 @@ class AbstractMetaWorkdayScraper(mixins.NotInstantiableMeta):
 class AbstractWorkdayScraper(AbstractScraper,
                              metaclass=AbstractMetaWorkdayScraper):
     SEARCH_ENDPOINT = 'fs/searchPagination/318c8bb6f553100021d223d9780d30be'
+    JOB_QUEUE = queue.Queue()
+    NUM_THREADS = 8
 
     @classmethod
     def scrape(cls, writer: Optional[AbstractJobWriter] = None) -> pd.DataFrame:
-        # TODO: This should be mulithreaded
-        jobs = pd.DataFrame([
-            cls._get_job_info(f'{cls.ROOT_URL}/{endpoint}')
-            for endpoint in cls._fetch_job_endpoints()
-        ])
+        jobs = []
+        threads = cls._start_threads(jobs)
+        cls._populate_job_queue()
+        cls._wait_for_threads_to_finish(threads)
+        jobs = pd.DataFrame(jobs).drop_duplicates('url', keep='first')
 
         if writer is not None:
             new_jobs, updated_jobs = writer.write_jobs(jobs)
@@ -66,19 +70,47 @@ class AbstractWorkdayScraper(AbstractScraper,
         return info
 
     @classmethod
-    def _fetch_job_endpoints(cls) -> list:
+    def _wait_for_threads_to_finish(cls, threads):
+        cls.JOB_QUEUE.join()
+        for _ in range(cls.NUM_THREADS):
+            cls.JOB_QUEUE.put(None)
+        for t in threads:
+            t.join()
+
+    @classmethod
+    def _start_threads(cls, jobs):
+        threads = []
+        for _ in range(cls.NUM_THREADS):
+            t = threading.Thread(target=cls._worker_loop, args=[jobs])
+            threads.append(t)
+            t.start()
+
+        return threads
+
+    @classmethod
+    def _worker_loop(cls, jobs):
+        while True:
+            job_url = cls.JOB_QUEUE.get()
+            if job_url is None:
+                break
+            else:
+                # TODO: I'm pretty sure this list appending is NOT thread-safe
+                jobs.append(cls._get_job_info(job_url))
+                cls.JOB_QUEUE.task_done()
+
+
+    @classmethod
+    def _populate_job_queue(cls) -> list:
         offset = 0
-        job_endpoints = []
         jobs = cls._get_search_results(offset)
 
         while jobs:
-            offset += len(jobs)
-            job_endpoints.extend([
-                '/'.join(j['title']['commandLink'].split('/')[3:]) for j in jobs
-            ])
-            jobs = cls._get_search_results(offset)
+            for j in jobs:
+                endpoint = '/'.join(j['title']['commandLink'].split('/')[3:])
+                cls.JOB_QUEUE.put(f'{cls.ROOT_URL}/{endpoint}')
 
-        return job_endpoints
+            offset += len(jobs)
+            jobs = cls._get_search_results(offset)
 
     @classmethod
     def _get_search_results(cls, offset: int) -> dict:
