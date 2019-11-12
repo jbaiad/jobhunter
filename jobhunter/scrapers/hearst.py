@@ -77,7 +77,7 @@ class HearstScraper(interfaces.AbstractScraper):
                 page_index += 1
             except request.HTTPError:
                 break
-        
+
     @classmethod
     def _worker_loop(cls, jobs):
         while True:
