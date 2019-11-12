@@ -40,22 +40,27 @@ def automated_scraping_job(scraper, writer):
 
 with airflow.DAG('job_scrapers', default_args=DEFAULT_ARGS, schedule_interval=dt.timedelta(minutes=10)) as scraper_dag:
     python_operator.PythonOperator(
-        task_id='conde_nast', 
+        task_id='conde_nast',
+        execution_timeout=dt.timedelta(minutes=5),
         python_callable=lambda: automated_scraping_job(scrapers.CondeNastScraper, daos.JobWriter)
     )
     python_operator.PythonOperator(
-        task_id='guardian', 
+        task_id='guardian',
+        execution_timeout=dt.timedelta(minutes=5),
         python_callable=lambda: automated_scraping_job(scrapers.GuardianScraper, daos.JobWriter)
     )
     python_operator.PythonOperator(
         task_id='nyt',
+        execution_timeout=dt.timedelta(minutes=5),
         python_callable=lambda: automated_scraping_job(scrapers.NewYorkTimesScraper, daos.JobWriter)
     )
     python_operator.PythonOperator(
         task_id='hearst',
+        execution_timeout=dt.timedelta(minutes=5),
         python_callable=lambda: automated_scraping_job(scrapers.HearstScraper, daos.JobWriter)
     )
     python_operator.PythonOperator(
         task_id='meredith',
+        execution_timeout=dt.timedelta(minutes=5),
         python_callable=lambda: automated_scraping_job(scrapers.MeredithScraper, daos.JobWriter)
     )
